@@ -1,10 +1,11 @@
 package com.vincentwang.mobilephone.model
 
 import com.vincentwang.mobilephone.api.CurrencyService
+import com.vincentwang.mobilephone.database.dao.CurrencyDao
 import com.vincentwang.mobilephone.model.data.CurrencyListData
 import com.vincentwang.mobilephone.model.data.CurrencyLiveResponse
 
-class CurrencyRepository(private val service: CurrencyService) {
+class CurrencyRepository(private val service: CurrencyService,private val dao: CurrencyDao) {
 
     fun getCurrencyLive() = service.getCurrencyLive()
 
@@ -19,6 +20,7 @@ class CurrencyRepository(private val service: CurrencyService) {
             val rate = entry.value.asDouble
             list.add(CurrencyListData(source, currency, rate))
         }
+        insertCurrencyToDB(list)
         return list
     }
 
@@ -30,5 +32,8 @@ class CurrencyRepository(private val service: CurrencyService) {
         return res
     }
 
+    fun insertCurrencyToDB(list:List<CurrencyListData>) = dao.add(list)
+
+    fun getCurrencyFromDB() = dao.findAll()
 
 }

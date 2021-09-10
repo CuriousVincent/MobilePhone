@@ -45,7 +45,6 @@ class CurrencyViewModel(
                 }
                 .observeOn(scheduler.io())
                 .map {
-
                     repository.getCurrencyRateListByResponse(it)
                 }
                 .observeOn(scheduler.ui())
@@ -74,7 +73,7 @@ class CurrencyViewModel(
     }
 
     fun selectCurrency(text:String){
-
+        //TODO repository
         if(text != selectCurrency.value){
             selectCurrency.value = text
             currencyData.find { it.currency == text }?.apply {

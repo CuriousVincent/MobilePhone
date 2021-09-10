@@ -1,5 +1,7 @@
 package com.vincentwang.mobilephone.model.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.JsonObject
 
 data class CurrencyLiveResponse(
@@ -11,8 +13,10 @@ data class CurrencyLiveResponse(
     val timestamp: Int
 )
 
+@Entity
 data class CurrencyListData(
     val source : String,
+    @PrimaryKey
     val currency : String,
     val rate : Double
 )
