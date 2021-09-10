@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModel
 import com.orhanobut.logger.Logger
 import com.vincentwang.mobilephone.model.CurrencyRepository
 import com.vincentwang.mobilephone.model.data.CurrencyListData
+import com.vincentwang.mobilephone.model.data.CurrencyLiveResponse
 import com.vincentwang.mobilephone.utils.SchedulerProvider
 import com.vincentwang.mobilephone.utils.SingleLiveEvent
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
+import java.util.concurrent.TimeUnit
 
 class CurrencyViewModel(
     private val repository: CurrencyRepository,
@@ -24,6 +27,7 @@ class CurrencyViewModel(
     var currencyData = ArrayList<CurrencyListData>()
     val submitList = SingleLiveEvent<ArrayList<CurrencyListData>>()
     val clickLiveEvent by lazy { SingleLiveEvent<Int>() }
+    val showErrorDialog = SingleLiveEvent<String>()
     init {
         getCurrency()
     }
@@ -32,36 +36,69 @@ class CurrencyViewModel(
         clickLiveEvent.postValue(v.id)
     }
 
+    private fun getCurrencyWithInterval(){
+        disposables.add(
+        Observable.interval( 30, TimeUnit.MINUTES)
+            .flatMap {
+                repository.getCurrencyLive()
+            }.subscribeOn(scheduler.io())
+            .subscribeWith(object:DisposableObserver<CurrencyLiveResponse>(){
+                override fun onNext(t: CurrencyLiveResponse) {
+                    if(t.success){
+                        repository.insertCurrencyDataToDB(t)
+                    }
+                }
+
+                override fun onError(e: Throwable) {
+                    Logger.e(e.message.orEmpty())
+                }
+
+                override fun onComplete() {
+                }
+
+            })
+        )
+    }
+
+
     private fun getCurrency() {
         disposables.add(
-            repository.getCurrencyLive()
-                .observeOn(scheduler.ui())
-                .filter {
-                    if (!it.success) {
-                        Logger.e("UnSuccess")
+            repository.getCurrencyFromDB().toObservable()
+                .flatMap { list ->
+                    return@flatMap if (list.isEmpty()) {
+                        repository.getCurrencyLive()
+                            .observeOn(scheduler.ui())
+                            .filter {
+                                if (!it.success) {
+                                    showErrorDialog.value = "UnSuccess"
+                                }
+                                it.success
+                            }
+                            .observeOn(scheduler.io())
+                            .map {
+                                repository.getCurrencyRateListByResponse(it)
+                            }
+                    } else {
+
+                        Observable.just(list)
                     }
-                    selectCurrency.value = it.source
-                    it.success
-                }
-                .observeOn(scheduler.io())
-                .map {
-                    repository.getCurrencyRateListByResponse(it)
                 }
                 .observeOn(scheduler.ui())
                 .subscribeOn(scheduler.io())
-                .subscribeWith(object : DisposableObserver<ArrayList<CurrencyListData>>() {
-                    override fun onNext(data: ArrayList<CurrencyListData>) {
-                        currencyData = data
+                .subscribeWith(object:DisposableObserver<List<CurrencyListData>>(){
+                    override fun onNext(data: List<CurrencyListData>) {
+                        selectCurrency.value = data[0].source
+                        currencyData = ArrayList(data)
                         submitList.value = currencyData
+                        getCurrencyWithInterval()
                     }
 
                     override fun onError(e: Throwable) {
-                        Logger.e(e.message.orEmpty())
+                        showErrorDialog.value = e.message.orEmpty()
                     }
 
-                    override fun onComplete() {
+                    override fun onComplete() {}
 
-                    }
                 })
         )
     }
@@ -73,7 +110,6 @@ class CurrencyViewModel(
     }
 
     fun selectCurrency(text:String){
-        //TODO repository
         if(text != selectCurrency.value){
             selectCurrency.value = text
             currencyData.find { it.currency == text }?.apply {

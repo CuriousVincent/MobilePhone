@@ -2,4 +2,5 @@
     <string name="app_name">MobilePhone</string>
     <string name="amount">Amount</string>
     <string name="select">select</string>
+    <string name="confirm">confirm</string>
 </resources>
