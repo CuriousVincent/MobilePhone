@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="vm"
+            type="com.vincentwang.mobilephone.ui.currency.CurrencyItemViewModel" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:padding="6dp"
+        app:cardBackgroundColor="#faf9f2"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="2dp"
+        >
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        >
+
+        <TextView
+            android:id="@+id/tvCurrency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{vm.currency}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="USD / USD"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{vm.rate}"
+            app:layout_constraintTop_toBottomOf="@+id/tvCurrency"
+            app:layout_constraintStart_toStartOf="@id/tvCurrency"
+            tools:text="10.00"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>
