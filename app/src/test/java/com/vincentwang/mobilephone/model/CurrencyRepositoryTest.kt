@@ -78,7 +78,18 @@ class CurrencyRepositoryTest {
 
     }
 
+    @Test
+    fun getSelectCurrencyList(){
+        val data = Gson().fromJson(readJsonFile("currencyResponse.json"),CurrencyLiveResponse::class.java)
+        every { dao.add(any()) } returns Unit
+        val list= repository.getCurrencyRateListByResponse(data)
 
+        repository.getSelectCurrencyList(list,"AFN").subscribe({
+            assertEquals("AFN",it[0].source)
+            assertEquals("AED",it[0].currency)
+            assertEquals(0.043,it[0].rate,0.0)
+        },{error->},{})
+    }
 
 
 }
