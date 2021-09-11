@@ -1,32 +1,27 @@
 package com.vincentwang.mobilephone.model
 
-import android.arch.core.executor.testing.InstantTaskExecutorRule
+
 import com.google.gson.Gson
 import com.vincentwang.mobilephone.api.CurrencyService
 import com.vincentwang.mobilephone.database.dao.CurrencyDao
 import com.vincentwang.mobilephone.model.data.CurrencyListData
 import com.vincentwang.mobilephone.model.data.CurrencyLiveResponse
+import com.vincentwang.mobilephone.utils.readJsonFile
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import org.junit.Assert.*
-import org.junit.Rule
 import org.junit.Test
-import java.io.*
 
 
 class CurrencyRepositoryTest {
 
-    @Rule
-    @JvmField
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
-
     private val service : CurrencyService = mockk()
     private val dao : CurrencyDao = mockk()
 
-    val repository = CurrencyRepository(service, dao)
+    private val repository = CurrencyRepository(service, dao)
 
 
 
@@ -83,18 +78,7 @@ class CurrencyRepositoryTest {
 
     }
 
-    @Throws(IOException::class)
-    fun readJsonFile(filename: String): String? {
-        val br =
-            BufferedReader(InputStreamReader(FileInputStream("../app/src/main/assets/$filename")))
-        val sb = StringBuilder()
-        var line = br.readLine()
-        while (line != null) {
-            sb.append(line)
-            line = br.readLine()
-        }
-        return sb.toString()
-    }
+
 
 
 }
