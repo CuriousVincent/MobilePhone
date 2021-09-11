@@ -110,18 +110,27 @@ class CurrencyViewModel(
     }
 
     fun selectCurrency(text:String){
-        if(text != selectCurrency.value){
-            selectCurrency.value = text
-            currencyData.find { it.currency == text }?.apply {
-                val selectRate = rate
-                val list = arrayListOf<CurrencyListData>()
-                for(data in currencyData){
-                    list.add(CurrencyListData(source = text, data.currency, data.rate / selectRate))
-                }
-                currencyData = list
-                submitList.value = currencyData
+
+        Observable.just(text != selectCurrency.value)
+            .filter{
+            it
+        }.flatMap {
+            repository.getSelectCurrencyList(currencyData,text)
             }
-        }
+            .subscribeWith(object:DisposableObserver<ArrayList<CurrencyListData>>(){
+                override fun onNext(t: ArrayList<CurrencyListData>) {
+                    selectCurrency.value = text
+                    currencyData = t
+                    submitList.value = currencyData
+                }
+
+                override fun onError(e: Throwable) {
+                    showErrorDialog.value = e.message.orEmpty()
+                }
+
+                override fun onComplete() {}
+
+            })
     }
 
     override fun onCleared() {

@@ -4,6 +4,7 @@ import com.vincentwang.mobilephone.api.CurrencyService
 import com.vincentwang.mobilephone.database.dao.CurrencyDao
 import com.vincentwang.mobilephone.model.data.CurrencyListData
 import com.vincentwang.mobilephone.model.data.CurrencyLiveResponse
+import io.reactivex.rxjava3.core.Observable
 
 class CurrencyRepository(private val service: CurrencyService,private val dao: CurrencyDao) {
 
@@ -49,4 +50,21 @@ class CurrencyRepository(private val service: CurrencyService,private val dao: C
 
     fun getCurrencyFromDB() = dao.findAll()
 
+
+    fun getSelectCurrencyList(currencyData:ArrayList<CurrencyListData>,text:String): Observable<ArrayList<CurrencyListData>> {
+        return Observable.create{emit->
+            val data = currencyData.find { it.currency == text }
+            if(data != null){
+                val selectRate = data.rate
+                val list = arrayListOf<CurrencyListData>()
+                for(cData in currencyData){
+                    list.add(CurrencyListData(source = text, cData.currency, cData.rate / selectRate))
+                }
+                emit.onNext(list)
+                emit.onComplete()
+            }else{
+               emit.onComplete()
+            }
+        }
+    }
 }

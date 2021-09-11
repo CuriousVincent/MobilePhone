@@ -8,8 +8,14 @@ import org.koin.core.context.GlobalContext
 
 class App : Application(){
 
+    companion object {
+        lateinit var instance: App
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
         // Start Koin
         GlobalContext.startKoin {
             androidLogger()
