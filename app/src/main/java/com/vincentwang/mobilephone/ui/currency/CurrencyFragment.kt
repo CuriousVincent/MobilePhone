@@ -12,10 +12,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
+import com.jakewharton.rxbinding2.view.RxView
 import com.vincentwang.mobilephone.MainActivity
 import com.vincentwang.mobilephone.R
 import com.vincentwang.mobilephone.databinding.FragmentCurrencyBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.concurrent.TimeUnit
 
 
 class CurrencyFragment : Fragment() {
@@ -47,13 +49,9 @@ class CurrencyFragment : Fragment() {
         binding.apply {
             rvRateList.adapter = adapter
             rvRateList.layoutManager = GridLayoutManager(act,3)
-        }
-        viewModel.submitList.observe(viewLifecycleOwner){
-            adapter.submitList(it)
-        }
-        viewModel.clickLiveEvent.observe(viewLifecycleOwner){
-            when(it){
-                R.id.tvCurrency->{
+
+            RxView.clicks(tvCurrency).throttleFirst(2,TimeUnit.SECONDS)
+                .subscribe {
                     viewModel.showCurrencyListDialog().observe(viewLifecycleOwner){
                         MaterialDialog(act).show {
                             listItemsSingleChoice(items = it) { dialog, index, text ->
@@ -62,10 +60,12 @@ class CurrencyFragment : Fragment() {
                             positiveButton(R.string.select)
                         }
                     }
-
                 }
-            }
         }
+        viewModel.submitList.observe(viewLifecycleOwner){
+            adapter.submitList(it)
+        }
+
         viewModel.showErrorDialog.observe(viewLifecycleOwner) {error->
             MaterialDialog(act).show{
                 title(text="Error")

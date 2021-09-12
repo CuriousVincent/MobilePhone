@@ -1,8 +1,10 @@
 package com.vincentwang.mobilephone.ui.currency
 
+import android.annotation.SuppressLint
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.jakewharton.rxbinding2.view.RxView
 import com.orhanobut.logger.Logger
 import com.vincentwang.mobilephone.model.CurrencyRepository
 import com.vincentwang.mobilephone.model.data.CurrencyListData
@@ -25,16 +27,12 @@ class CurrencyViewModel(
     val amount = MutableLiveData<String>()
     val selectCurrency = MutableLiveData<String>()
     val submitList = SingleLiveEvent<ArrayList<CurrencyListData>>()
-    val clickLiveEvent by lazy { SingleLiveEvent<Int>() }
     val showErrorDialog = SingleLiveEvent<String>()
 
     init {
         getCurrency()
     }
 
-    fun onClick(v: View) {
-        clickLiveEvent.postValue(v.id)
-    }
 
     private fun getCurrencyWithInterval() {
         disposables.add(
