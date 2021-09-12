@@ -33,6 +33,7 @@
                 android:inputType="number"
                 android:maxLines="1"
                 android:singleLine="true"
+                android:imeOptions="actionDone"
                 android:text="@={vm.amount}" />
 
         </com.google.android.material.textfield.TextInputLayout>

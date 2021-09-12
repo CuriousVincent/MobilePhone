@@ -42,19 +42,19 @@ class CurrencyViewModelTest {
 
     @Test
     fun showCurrencyListDialog() {
-        every { repository.getCurrencyList(any()) } returns arrayListOf("USD")
+        every { repository.getCurrencyListFromDB() } returns Single.just(listOf("USD"))
        val data = viewModel.showCurrencyListDialog().value
-        verify { repository.getCurrencyList(any()) }
+        verify { repository.getCurrencyListFromDB() }
         assertEquals("USD",data?.get(0))
     }
 
     @Test
     fun selectCurrency() {
-        every { repository.getSelectCurrencyList(any(),any()) } returns Observable.just(arrayListOf(
+        every { repository.getSelectCurrencyList(any()) } returns Observable.just(arrayListOf(
             CurrencyListData("AFN","AED",0.043)
         ))
         viewModel.selectCurrency("AFN")
-        verify { repository.getSelectCurrencyList(any(),any()) }
+        verify { repository.getSelectCurrencyList(any()) }
         assertEquals("AFN",viewModel.selectCurrency.value)
         assertEquals("AED",viewModel.submitList.value?.get(0)?.currency)
         assertEquals(0.043,viewModel.submitList.value?.get(0)?.rate)

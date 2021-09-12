@@ -58,10 +58,12 @@ class CurrencyRepositoryTest {
     @Test
     fun getCurrencyList() {
 
-        val data= arrayListOf<CurrencyListData>(CurrencyListData("USD","AED",3.67298))
-        val stringList = repository.getCurrencyList(data)
-        assertEquals("AED",stringList[0])
-        assertEquals(1,stringList.size)
+        every{dao.findCurrency()} returns Single.just(listOf<String>("AED"))
+        repository.getCurrencyListFromDB().subscribe {list->
+            assertEquals("AED",list[0])
+            assertEquals(1,list.size)
+        }
+
     }
 
     @Test
@@ -80,11 +82,15 @@ class CurrencyRepositoryTest {
 
     @Test
     fun getSelectCurrencyList(){
-        val data = Gson().fromJson(readJsonFile("currencyResponse.json"),CurrencyLiveResponse::class.java)
-        every { dao.add(any()) } returns Unit
-        val list= repository.getCurrencyRateListByResponse(data)
 
-        repository.getSelectCurrencyList(list,"AFN").subscribe({
+        every { dao.add(any()) } returns Unit
+        val data= arrayListOf<CurrencyListData>(
+            CurrencyListData("USD","AED",3.67298),
+            CurrencyListData("USD","AFN",86.740586)
+        )
+        every { dao.findAll() } returns Single.just(data)
+
+        repository.getSelectCurrencyList("AFN").subscribe({
             assertEquals("AFN",it[0].source)
             assertEquals("AED",it[0].currency)
             assertEquals(0.043,it[0].rate,0.0)

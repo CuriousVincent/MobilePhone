@@ -16,4 +16,8 @@ interface CurrencyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun add(users: List<CurrencyListData>)
 
+
+    @Query("SELECT currency FROM CurrencyListData")
+    fun findCurrency(): Single<List<String>>
+
 }

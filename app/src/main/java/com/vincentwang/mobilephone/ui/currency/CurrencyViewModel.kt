@@ -10,7 +10,6 @@ import com.vincentwang.mobilephone.model.data.CurrencyLiveResponse
 import com.vincentwang.mobilephone.utils.SchedulerProvider
 import com.vincentwang.mobilephone.utils.SingleLiveEvent
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.observers.DisposableSingleObserver
@@ -25,7 +24,6 @@ class CurrencyViewModel(
 
     val amount = MutableLiveData<String>()
     val selectCurrency = MutableLiveData<String>()
-    var currencyData = ArrayList<CurrencyListData>()
     val submitList = SingleLiveEvent<ArrayList<CurrencyListData>>()
     val clickLiveEvent by lazy { SingleLiveEvent<Int>() }
     val showErrorDialog = SingleLiveEvent<String>()
@@ -90,8 +88,7 @@ class CurrencyViewModel(
                 .subscribeWith(object : DisposableObserver<List<CurrencyListData>>() {
                     override fun onNext(data: List<CurrencyListData>) {
                         selectCurrency.value = data[0].source
-                        currencyData = ArrayList(data)
-                        submitList.value = currencyData
+                        submitList.value = ArrayList(data)
                         getCurrencyWithInterval()
                     }
 
@@ -105,25 +102,37 @@ class CurrencyViewModel(
         )
     }
 
-    fun showCurrencyListDialog(): MutableLiveData<ArrayList<String>> {
-        val liveData = MutableLiveData<ArrayList<String>>()
-        liveData.value = repository.getCurrencyList(currencyData)
+    fun showCurrencyListDialog(): MutableLiveData<List<String>> {
+        val liveData = MutableLiveData<List<String>>()
+        repository.getCurrencyListFromDB()
+            .observeOn(scheduler.ui())
+            .subscribeOn(scheduler.io())
+            .subscribeWith(object:DisposableSingleObserver<List<String>>(){
+            override fun onSuccess(t: List<String>) {
+                liveData.value = t
+            }
+
+            override fun onError(e: Throwable) {
+                showErrorDialog.value = e.message.orEmpty()
+            }
+
+        })
         return liveData
     }
 
     fun selectCurrency(text: String) {
-
         Observable.just(text != selectCurrency.value)
             .filter {
                 it
             }.flatMap {
-                repository.getSelectCurrencyList(currencyData, text)
+                repository.getSelectCurrencyList( text)
             }
+            .observeOn(scheduler.ui())
+            .subscribeOn(scheduler.io())
             .subscribeWith(object : DisposableObserver<ArrayList<CurrencyListData>>() {
                 override fun onNext(t: ArrayList<CurrencyListData>) {
                     selectCurrency.value = text
-                    currencyData = t
-                    submitList.value = currencyData
+                    submitList.value = t
                 }
 
                 override fun onError(e: Throwable) {

@@ -38,21 +38,15 @@ class CurrencyRepository(private val service: CurrencyService,private val dao: C
         insertCurrencyToDB(list)
     }
 
-    fun getCurrencyList(list : ArrayList<CurrencyListData>) : ArrayList<String>{
-        val res = arrayListOf<String>()
-        for(data in list){
-            res.add(data.currency)
-        }
-        return res
-    }
+    fun getCurrencyListFromDB() = dao.findCurrency()
 
     private fun insertCurrencyToDB(list:List<CurrencyListData>) = dao.add(list)
 
     fun getCurrencyFromDB() = dao.findAll()
 
 
-    fun getSelectCurrencyList(currencyData:ArrayList<CurrencyListData>,text:String): Observable<ArrayList<CurrencyListData>> {
-        return Observable.create{emit->
+    fun getSelectCurrencyList(text:String): Observable<ArrayList<CurrencyListData>> {
+        return dao.findAll().toObservable().map{currencyData->
             val data = currencyData.find { it.currency == text }
             if(data != null){
                 val selectRate = data.rate
@@ -60,11 +54,11 @@ class CurrencyRepository(private val service: CurrencyService,private val dao: C
                 for(cData in currencyData){
                     list.add(CurrencyListData(source = text, cData.currency, cData.rate / selectRate))
                 }
-                emit.onNext(list)
-                emit.onComplete()
+                return@map list
             }else{
-               emit.onComplete()
+                return@map ArrayList(currencyData)
             }
         }
+
     }
 }
