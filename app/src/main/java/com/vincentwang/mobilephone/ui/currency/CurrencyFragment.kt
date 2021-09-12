@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
@@ -45,7 +46,7 @@ class CurrencyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             rvRateList.adapter = adapter
-            rvRateList.layoutManager = LinearLayoutManager(act, LinearLayoutManager.VERTICAL, false)
+            rvRateList.layoutManager = GridLayoutManager(act,3)
         }
         viewModel.submitList.observe(viewLifecycleOwner){
             adapter.submitList(it)
